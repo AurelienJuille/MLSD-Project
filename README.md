@@ -8,7 +8,7 @@ FFate **predicts win probability after 15 minutes**, helping players decide if t
 
 ## Use case
 
-For more information on our **use case**, you can check our ![ML canvas](definition/USECASE.md).
+For more information on our **use case**, you can check our [ML canvas](definition/USECASE.md).
 
 ## Model, data and source code
 
