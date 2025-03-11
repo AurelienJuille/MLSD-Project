@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <title>LolFFate</title>
+    </head>
+    <body>
+
+        <div class="container">
+            <h1>LolFFate</h1>
+
+            <input type="text" id="matchId" placeholder="Match ID">
+            <button onclick="runPrediction()">Predict</button>
+
+            <div id="results">
+                <h3>Prediction Results</h3>
+                <p><strong>Prediction:</strong> <span id="prediction"></span></p>
+            </div> 
+        </div>
+
+        <script>
+            function runPrediction() {
+                var matchId = $("#matchId").val(); // Get the value from the input field
+                if(!matchId) {
+                    alert("Please enter a match ID"); // Show an alert if the input field is empty
+                    return;
+                }
+
+                // Make a POST request to the /predict endpoint of our Flask app
+                $.post("/predict", { matchId: matchId }, function(data) {
+                    if (data.error) {
+                        alert("Error: " + data.error); // Show an alert if there is an error
+                    } else {
+                        $("#prediction").text(data.prediction); // Update the prediction text
+                    }
+                });
+            }
+        </script>
+
+    </body>
+</html>
