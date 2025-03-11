@@ -5,6 +5,8 @@ from flask import Flask, request, render_template, jsonify, redirect, url_for
 
 app = Flask(__name__)
 
+history = []
+
 """
 Prepare data for prediction
 
@@ -69,8 +71,53 @@ def predict_match(match_id):
     except KeyError:
         return -1 # Match not found  
     
-    return predict(match_features)
+    prediction = predict(match_features)
+    
+    history.append({
+        "match_id": match_id,
+        "prediction": prediction
+    })
+    
+    return prediction
 
+def get_history_string():
+    history_string = ""
+    for h in history:
+        history_string += f"Match {h['match_id']}: {'Blue' if int(h['prediction']) == 1 else 'Red'} team wins "
+        
+    return history_string
+
+@app.route("/past_predictions/last", methods=["PUT"])
+def update_last_history():
+    if len(history) == 0:
+        return jsonify({"error": "No prediction history found"})
+    
+    history[-1]["prediction"] = request.form['update']
+    
+    return jsonify({"history": get_history_string()})
+
+@app.route("/past_predictions/<id>", methods=["PUT"])
+def update_history(id):
+    if len(history) == 0:
+        return jsonify({"error": "No prediction history found"})
+     
+    if int(id) >= len(history):
+        return jsonify({"error": "Prediction not found"})
+    
+    history[int(id)]["prediction"] = request.form['update']
+    
+    return jsonify({"history": get_history_string()})
+
+@app.route("/past_predictions", methods=["GET"]) 
+def get_history():
+    try:
+        return jsonify({
+            "history": get_history_string()
+        })
+        
+    except Exception as e:
+        return jsonify({"error": str(e)})
+    
 @app.route('/predict', methods=['POST'])
 def get_prediction():
     match_id = request.form['matchId']
