@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <title>LolFFate</title>
+    </head>
+    <body>
+
+        <div class="container">
+            <h1>LolFFate</h1>
+
+            <input type="text" id="matchId" placeholder="Match ID">
+            <button onclick="runPrediction()">Predict</button>
+
+            <div id="results">
+                <h3>Prediction Results</h3>
+                <p><strong>Prediction:</strong> <span id="prediction"></span></p>
+            </div> 
+        </div>
+
+        <div class="container">
+            <button onclick="getPredictionHistory()">Display Prediction History</button>
+            <p><strong>Prediction History:</strong> <span id="prediction_history"></span></p>
+        </div>
+
+        <div class="container">
+            <p><strong>Update prediction (1 for Blue side win, 0 for Red side win):</strong></p>
+            <input type="number" id="update" placeholder="Update Prediction">
+            <button onclick="updateLastPredictionHistory()">Update Last Prediction History</button>
+
+            <input type="text" id="updateID" placeholder="Prediction ID to update">
+            <button onclick="updateSpecificPredictionHistory()">Update Specific Prediction History</button>
+        </div>
+
+        <script>
+            function runPrediction() {
+                var matchId = $("#matchId").val(); // Get the value from the input field
+                if(!matchId) {
+                    alert("Please enter a match ID"); // Show an alert if the input field is empty
+                    return;
+                }
+
+                // Make a POST request to the /predict endpoint of our Flask app
+                $.post("/predict", { matchId: matchId }, function(response) {
+                    if (response.error) {
+                        alert("Error: " + response.error); // Show an alert if there is an error
+                    } else {
+                        $("#prediction").text(response.prediction); // Update the prediction text
+                    }
+                });
+            }
+
+            function getPredictionHistory() {
+                $.get("/past_predictions", function(response) {
+                    if (response.error) {
+                        alert("Error: " + response.error); // Show an alert if there is an error
+                    } else {
+                        $("#prediction_history").text(response.history); // Update the prediction history text
+                    }
+                });
+            }
+
+            function updateLastPredictionHistory() {
+                var prediction = $("#update").val();
+                if (!prediction) {
+                    alert("Please enter a prediction value");
+                    return;
+                }
+
+                $.ajax({
+                    url: "/past_predictions/last",
+                    type: 'PUT',
+                    data: "update=" + prediction,
+                    success: function(response) {
+                        if (response.error) {
+                            alert("Error: " + response.error); // Show an alert if there is an error
+                        } else {
+                            $("#prediction_history").text(response.history); // Update the prediction history text
+                        }
+                    }
+                });
+            }
+
+            function updateSpecificPredictionHistory() {
+                var id = $("#updateID").val(); 
+                var prediction = $("#update").val();
+
+                if (!id || !prediction) {
+                    alert("Please enter a prediction ID and prediction value");
+                    return;
+                }
+
+                $.ajax({
+                    url: "/past_predictions/" + id,
+                    type: 'PUT',
+                    data: "update=" + prediction,
+
+                    success: function(response) {
+                        if (response.error) {
+                            alert("Error: " + response.error); // Show an alert if there is an error
+                        } else {
+                            $("#prediction_history").text(response.history); // Update the prediction history text
+                        }
+                    }
+                });   
+            }
+        </script>
+
+    </body>
+</html>
