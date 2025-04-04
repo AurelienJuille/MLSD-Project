@@ -2,146 +2,162 @@ import pickle
 import pandas as pd
 
 from sklearn.model_selection import train_test_split, KFold, RandomizedSearchCV
-from sklearn.metrics import accuracy_score, f1_score, roc_auc_score
+from sklearn.metrics import log_loss
 from sklearn.ensemble import RandomForestClassifier
 from sklearn import preprocessing
 from sklearn.feature_selection import SelectKBest
 from sklearn.pipeline import Pipeline
 
-"""
-Prepare data for training
 
-Returns:
-    X_train: training data
-    X_test: test data
-    y_train: training labels
-    y_test: test labels
-"""
-def prepare_data(df):
+def split_data(df):
+    """
+    Prepare data for training
+
+    Returns:
+        X_train: training data
+        X_test: test data
+        y_train: training labels
+        y_test: test labels
+    """
+
     X = df.drop(columns=["blueWin"]) # Features
     y = df["blueWin"] # Labels
     
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0) # Split data
     
-    # Standardize data
-    scaler = preprocessing.StandardScaler().fit(X_train)
-    X_train = scaler.transform(X_train)
-    X_test = scaler.transform(X_test)
-    
     return X_train, X_test, y_train, y_test
 
-"""
-Find best K features using SelectKBest
 
-Args:
-    model: model to be used
-    X_train: training data
-    X_test: test data
-    y_train: training labels
-    y_test: test labels
-    
-Returns:
-    selected_features_indices: indices of selected features
-"""
-def feature_selection(model, X_train, X_test, y_train, y_test):
-    k = -1 
-    max_score = 0
-  
-    for i in range(1, 16, 2):
-        selector = SelectKBest(k=i)
-        pipeline = Pipeline([('selector', selector), ('model', model)])
-        pipeline.fit(X_train, y_train)
-        score = pipeline.score(X_test, y_test)
+def feature_selection(model, X_train, y_train):
+    """
+    Select best features
+
+    Args:
+        model: model to be used
+        X_train: training data
+        y_train: training labels
         
-        if score > max_score:
-            k = i
-            max_score = score
-            selected_features_indices = selector.get_support(indices=True)
-    
-    print(f"Selected {k} features")
-    print(selected_features_indices)
-    
-    return X_train[:, selected_features_indices], X_test[:, selected_features_indices]
+    Returns:
+        selected_features_indices: indices of selected features
+    """
 
-"""
-Train model with RandomizedSearchCV
-
-Args:
-    model: model to be used
-    param_grid: hyperparameters
-    X_train: training data
-    y_train: training labels
+    # For the moment, no feature selection is done
     
-Returns:
-    best_model: best model
-    best_score: best score
-    best_param: best hyperparameters
-"""
-def train_model_with_random_search(model, param_grid, X_train, y_train):
-    cv = KFold(n_splits=5, shuffle=True, random_state=0)
+    pass
 
-    random_search = RandomizedSearchCV(model, param_distributions=param_grid, n_iter=10, 
-                                       scoring='accuracy', n_jobs=-1, cv=cv)
+
+def train_model_with_random_search(model, param_grid, X_train, y_train, cv):
+    """
+    Trains a model using RandomizedSearchCV to perform hyperparameter optimization.
+    Uses cross-validation to evaluate performance and minimizes the negative log loss.
+    Args:
+        model: The machine learning model to be trained.
+        param_grid (dict): The hyperparameters.
+        X_train: The training input samples.
+        y_train: The target values (class labels) for the training data.
+    Returns:
+        tuple: A tuple containing:
+            - best_model: The model with the best hyperparameters.
+            - best_param (dict): The best hyperparameter combination found during the search.
+    Prints:
+        - The best training score achieved during the search.
+        - The best hyperparameter combination.
+    """
+
+    print("Starting training...")
+
+    # Initialize RandomizedSearchCV
+    random_search = RandomizedSearchCV(model, param_distributions=param_grid, n_iter=10,
+                                       scoring='neg_log_loss', n_jobs=-1, cv=cv)
 
     # Fit RandomizedSearchCV
     random_search.fit(X_train, y_train)
 
+    print("Training completed")
+    print()
+
+    # Get best estimator
     best_model = random_search.best_estimator_
+    # Get best training score
     best_score = random_search.best_score_
+    print('Best Training Score: ', best_score)
+    # Get best param
     best_param = random_search.best_params_
+    print('Best Parameters: ', best_param)
+    print()
 
-    return best_model, best_score, best_param
+    # Return model
+    return best_model, best_param
 
-"""
-Evaluate model with accuracy, f1 and roc_auc scores
 
-Args:
-    model: trained model
-    X_test: test data
-    y_test: test labels
+def compute_log_loss(model, X_test, y_test):
+    """
+    Computes the log loss of a model's predictions on a dataset.
+    Args:
+        model: A trained classification model.
+        X_test: The test data
+        y_test: The test labels
+    Returns:
+        float: The computed log loss value.
+    Prints:
+        - The log loss value to the console.
+    """
 
-Returns:
-    accuracy: accuracy score
-    f1: f1 score
-    roc_auc: roc_auc score
-"""
-def evaluate_model(model, X_test, y_test):
-    y_pred = model.predict(X_test)
+    print("Model Evaluation: ")
+
+    # Predict on test set
     y_pred_prob = model.predict_proba(X_test)[:, 1]
 
-    accuracy = accuracy_score(y_test, y_pred)
-    f1 = f1_score(y_test, y_pred, average='weighted')
-    roc_auc = roc_auc_score(y_test, y_pred_prob)
+    # Compute Log Loss
+    loss = log_loss(y_test, y_pred_prob)
+    print('Log Loss: ', loss)
+    print()
 
-    return accuracy, f1, roc_auc
+    return loss
+
 
 if __name__ == '__main__':
+
+    # Load data
     df = pd.read_csv("data/processed_dataset.csv", index_col=0)
     
-    # Prepare data
-    X_train, X_test, y_train, y_test = prepare_data(df)
+    # Split data
+    X_train, X_test, y_train, y_test = split_data(df)
+
+    # Preprocess data
+    scaler = preprocessing.StandardScaler()
+    X_train = scaler.fit_transform(X_train)
+    X_test = scaler.transform(X_test)
     
-    # Model
-    model = RandomForestClassifier()
-    
-    # Feature selection
-    X_train, X_test = feature_selection(model, X_train, X_test, y_train, y_test)
-    
-    # Train model with RandomizedSearchCV
+    # Define model and hyperparameters
     param_grid = {
-        'n_estimators': [100, 200, 300],
-        'criterion': ['gini'],
-        'max_depth': [None, 3, 4, 5, 10, 20, 30, 40, 50],
+        'n_estimators': [200, 300, 500],
+        'criterion': ['entropy'],
+        'max_depth': [None, 3, 4, 5, 10, 20, 30],
         'min_samples_split': [2, 5, 10],
         'min_samples_leaf': [1, 2, 4],
         'bootstrap': [True, False]
     }
-    
-    trained_model, best_score, best_param = train_model_with_random_search(model, param_grid, X_train, y_train)
-    
-    # Save model
-    pickle.dump(trained_model, open("model.pkl", "wb"))
+
+    model = RandomForestClassifier(n_estimators=300,
+                                criterion='entropy',
+                                max_depth=10,
+                                min_samples_split=5,
+                                min_samples_leaf=2,
+                                n_jobs=-1,
+                                random_state=0)
+
+
+    # Define cross-validation strategy
+    cv = KFold(n_splits=5, shuffle=True, random_state=0)
+
+    # Train the model
+    trained_model, param_sample = train_model_with_random_search(model, param_grid, X_train, y_train, cv)
     
     # Evaluate model
-    accuracy, f1, roc_auc = evaluate_model(trained_model, X_test, y_test)
+    loss = compute_log_loss(trained_model, X_test, y_test)
+
+    # Save model
+    pickle.dump(trained_model, open("model.pkl", "wb"))
+    pickle.dump(scaler, open("scaler.pkl", "wb"))
     

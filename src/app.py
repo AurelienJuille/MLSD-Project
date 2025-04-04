@@ -7,29 +7,32 @@ app = Flask(__name__)
 
 history = []
 
-"""
-Prepare data for prediction
 
-Args:
-    df: data to predict 
-    
-Returns:
-    to_predict: data to predict after feature selection
-"""
 def apply_feature_selection(original_features):
-    selected_features_indices = [2, 11, 12, 16, 21, 24, 25, 27, 29, 30, 31, 32, 33, 35, 37] 
-    return original_features.iloc[selected_features_indices]
+    """
+    Prepare data for prediction
 
-"""
-Predict the result of a game
+    Args:
+        df: data to predict 
+        
+    Returns:
+        to_predict: data to predict after feature selection
+    """
+    #selected_features_indices = [2, 11, 12, 16, 21, 24, 25, 27, 29, 30, 31, 32, 33, 35, 37] 
+    #return original_features.iloc[selected_features_indices]
+    pass
 
-Args: 
-    to_predict: data to predict
-    
-Returns:
-    prediction: prediction result 
-"""
+
 def predict(features):
+    """
+    Predict the result of a game
+
+    Args: 
+        to_predict: data to predict
+        
+    Returns:
+        prediction: prediction result 
+    """
     # to_predict["diffMinionsKilled"] = to_predict["blueTeamMinionsKilled"] - to_predict["redTeamMinionsKilled"]
     # to_predict["diffJungleMinions"] = to_predict["blueTeamJungleMinions"] - to_predict["redTeamJungleMinions"]
     # to_predict["diffTotalGold"] = to_predict["blueTeamTotalGold"] - to_predict["redTeamTotalGold"]
@@ -42,25 +45,30 @@ def predict(features):
     # to_predict["diffInhibitorsDestroyed"] = to_predict["blueTeamInhibitorsDestroyed"] - to_predict["redTeamInhibitorsDestroyed"]
     # to_predict["diffTurretPlatesDestroyed"] = to_predict["blueTeamTurretPlatesDestroyed"] - to_predict["redTeamTurretPlatesDestroyed"]
 
-    to_predict = apply_feature_selection(features) 
-    to_predict = to_predict.values.reshape(1, -1)
-    
-    loaded_model = pickle.load(open("model.pkl", "rb"))
-    prediction = loaded_model.predict_proba(to_predict)[0, 1] # Probability of blue team winning for the fist sample
+    #to_predict = apply_feature_selection(features)
+    to_predict = features.values.reshape(1, -1)
+
+    scaler = pickle.load(open("scaler.pkl", "rb"))
+    model = pickle.load(open("model.pkl", "rb"))
+
+    to_predict = scaler.transform(to_predict) # Scale the data
+
+    prediction = model.predict_proba(to_predict)[0, 1] # Probability of blue team winning for the first sample
 
     return prediction
 
-"""
-Predict the result of a match
 
-Args:
-    match_id: id of the match to predict
-
-Returns:
-    prediction: prediction result (1 if blue team wins, 0 if red team wins) or -1 if match not found
-"""
 def predict_match(match_id):
-    
+    """
+    Predict the result of a match
+
+    Args:
+        match_id: id of the match to predict
+
+    Returns:
+        prediction: prediction result (1 if blue team wins, 0 if red team wins) or -1 if match not found
+    """
+
     # TODO: implement this function with the riot API
     
     df = pd.read_csv("data/processed_dataset.csv", index_col=0) # ONLY FOR TESTING
@@ -89,6 +97,7 @@ def get_history_string():
             history_string += f"Match {h['match_id']}: Red team wins with probability of " + str(round((1-h['prediction']) * 100, 2)) + "%<br>"
     return history_string
 
+
 @app.route("/past_predictions/last", methods=["PUT"])
 def update_last_history():
     if len(history) == 0:
@@ -97,6 +106,7 @@ def update_last_history():
     history[-1]["prediction"] = float(request.form['update'])
     
     return jsonify({"history": get_history_string()})
+
 
 @app.route("/past_predictions/<id>", methods=["PUT"])
 def update_history(id):
@@ -111,6 +121,7 @@ def update_history(id):
     
     return jsonify({"history": get_history_string()})
 
+
 @app.route("/past_predictions", methods=["GET"]) 
 def get_history():
     try:
@@ -121,6 +132,7 @@ def get_history():
     except Exception as e:
         return jsonify({"error": str(e)})
     
+
 @app.route('/predict', methods=['POST'])
 def get_prediction():
     match_id = request.form['matchId']
@@ -133,6 +145,7 @@ def get_prediction():
     return jsonify({
          "probability": prediction
     })
+
 
 @app.route("/")
 def index():
