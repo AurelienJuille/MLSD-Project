@@ -46,9 +46,9 @@ def predict(features):
     to_predict = to_predict.values.reshape(1, -1)
     
     loaded_model = pickle.load(open("model.pkl", "rb"))
-    prediction = loaded_model.predict(to_predict)
+    prediction = loaded_model.predict_proba(to_predict)[0, 1] # Probability of blue team winning for the fist sample
 
-    return prediction[0]
+    return prediction
 
 """
 Predict the result of a match
@@ -83,8 +83,10 @@ def predict_match(match_id):
 def get_history_string():
     history_string = ""
     for h in history:
-        history_string += f"Match {h['match_id']}: {'Blue' if int(h['prediction']) == 1 else 'Red'} team wins "
-        
+        if h['prediction'] >= 0.5:
+            history_string += f"Match {h['match_id']}: Blue team wins with probability of " + str(round(h['prediction'] * 100, 2)) + "%<br>"
+        else:
+            history_string += f"Match {h['match_id']}: Red team wins with probability of " + str(round((1-h['prediction']) * 100, 2)) + "%<br>"
     return history_string
 
 @app.route("/past_predictions/last", methods=["PUT"])
@@ -92,7 +94,7 @@ def update_last_history():
     if len(history) == 0:
         return jsonify({"error": "No prediction history found"})
     
-    history[-1]["prediction"] = request.form['update']
+    history[-1]["prediction"] = float(request.form['update'])
     
     return jsonify({"history": get_history_string()})
 
@@ -101,10 +103,11 @@ def update_history(id):
     if len(history) == 0:
         return jsonify({"error": "No prediction history found"})
      
-    if int(id) >= len(history):
+    entry = next((h for h in history if h["match_id"] == id), None)
+    if not entry:
         return jsonify({"error": "Prediction not found"})
     
-    history[int(id)]["prediction"] = request.form['update']
+    entry["prediction"] = float(request.form['update'])
     
     return jsonify({"history": get_history_string()})
 
@@ -125,10 +128,11 @@ def get_prediction():
     
     if prediction == -1:
         return jsonify({"error": "Match not found"})
-    elif prediction == 1:
-        return jsonify({"prediction": "Blue team wins"})
-    else:
-        return jsonify({"prediction": "Red team wins"})
+    
+    # Return the probability for blue team winning (a float between 0 and 1)
+    return jsonify({
+         "probability": prediction
+    })
 
 @app.route("/")
 def index():
