@@ -4,10 +4,10 @@ After the first milestone, we used the feedback provided by the teachers to bett
 
 ## Model Evaluation
 
-Since the output of our predictions is going to be a probability rather than a binary classification, we chose log-loss (cross-entropy loss) as the main metric that we are going to test for. Log loss directly penalizes confident incorrect predictions and evaluates how well the predicted probabilities align with the actual outcomes. It is particularly useful when you need to judge the quality of probability estimates rather than just the classification accuracy.
-This ensures that the model not only distinguishes between wins and losses but also provides reliable probability estimates.
+Since the output of our **predictions** is going to be a **probability** rather than a binary classification, we chose **log-loss (cross-entropy loss)** as the main metric that we are going to test for. Log-loss directly penalizes confident incorrect predictions and evaluates how well the predicted probabilities align with the actual outcomes. It is particularly useful when you need to judge the **quality of probability estimates** rather than just the **classification accuracy**.
+This ensures that the model not only distinguishes between wins and losses but also provides **reliable probability estimates**.
 
-We still kept different other metrics for the record, but our decisions are not based on them. Precisely:
+We still **kept** different other metrics for the record, **but our decisions are not based on them**. Precisely:
 
 - Accuracy
 - F1 score
@@ -16,12 +16,13 @@ We still kept different other metrics for the record, but our decisions are not 
 
 ## Addressing feature importance
 
-Tree-based models have a built-in feature that lets us rank and visualize the importance that the model assigned to each feature after training to make its predictions, providing insight into which features are more relevant. We have to keep in mind though that this ranking is not objective and can change if some correlated features are removed making the the model rely more in others.
-We now plot this ranking at the end of each training.
+Tree-based models have a built-in feature that lets us **rank and visualize** the **importance** that the model assigned **to each feature** after training to make its predictions, providing insight into **which features** are **more relevant**. We have to keep in mind though that this **ranking is not objective** and can change if some correlated features are removed making the the model rely more in others.
+
+We now plot this ranking at the end of each training (you can have a look at it [at the end of this notebook](../../notebooks/training.ipynb)).
 
 ## Feature selection
 
-We are using a very powerful model that can manage very well a large number of features. For this reason, we compared the results of performing or not different kinds of feature selection to justify this choice. Also, we included another function to perform feature selection using Recursive Feature Elimination with Cross Validation.
+We are using a very powerful model that **can manage** very well a **large number of features**. For this reason, we **compared** the results of performing or not different kinds of feature selection **to justify this choice**. Also, we included another function to perform feature selection using **Recursive Feature Elimination with Cross Validation**.
 
 ### Results
 
@@ -46,7 +47,7 @@ More detailed results are avaliable. This is a summary:
 
 It appears that feature selection **does not affect significantly** the model performance. A more precise statistical test would be needed to determine if the observed variations in the log-loss score of the table above is statistically significant or not. However, even if the values indeed were significant, it is still a **very small difference** (0.0105 in the worst case) and will probably not make a big difference in the quality of our predictions.
 
-For this reason, we conclude that **we will use feature selection** if the simplification of the data gathering process adds any value (faster response times, smoother experience for the user if imputting manually); and **will not use it** if the integration with the Riot API allows for easy acess to all the features.
+For this reason, we conclude that **we will use feature selection** if the simplification of the data gathering process adds any value (faster response times, smoother experience for the user if inputting manually); and **will not use it** if the integration with the Riot API allows for easy acess to all the features.
 
 ## Other motivations
 
@@ -56,6 +57,6 @@ Entropy usually produces more balanced splits, at the cost of computational comp
 
 ### Why add the "diff" features if they are redundant information?
 
-These features might add value to the model by highlighting the advantage of one team over the other in that category. Although these relations can still be learnt by the model without adding these features, they help the model capture that pattern more easily, reducing complexity.
+These features might **add value to the model** by **highlighting the advantage** of one team over the other **in that category**. Although these relations can still be learnt by the model without adding these features, they **help the model** capture that pattern more easily, reducing complexity.
 
 Adding the features decreases the model's log-loss from ***0.4898*** to ***0.4860*** (0.0038 difference). Although it is not a big difference at all and it may not be statistically significant, that paired with the fact that automatic feature selection did not remove those features and they are computationally easy to compute makes enough evidence to keep them.
