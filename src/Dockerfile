@@ -3,10 +3,13 @@ ENV PYTHONUNBUFFERED True
 
 # Set the working directory to /app
 WORKDIR /app
-COPY . /app
+
+COPY requirements.txt /app/
 
 # Install the required packages
 RUN pip install -r requirements.txt
+
+COPY . /app
 
 # Expose port 8080 for Flask
 #EXPOSE 8080

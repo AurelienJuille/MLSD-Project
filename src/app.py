@@ -1,11 +1,14 @@
 import pickle
 import pandas as pd
+import lime
+import lime.lime_tabular
 
 from flask import Flask, request, render_template, jsonify, redirect, url_for
 
 app = Flask(__name__)
 
 history = []
+
 
 
 def apply_feature_selection(original_features):
@@ -20,7 +23,35 @@ def apply_feature_selection(original_features):
     """
     #selected_features_indices = [2, 11, 12, 16, 21, 24, 25, 27, 29, 30, 31, 32, 33, 35, 37] 
     #return original_features.iloc[selected_features_indices]
-    pass
+    return original_features
+
+
+def create_global_explainer():
+    # Load the dataset
+    df_rep = pd.read_csv("data/processed_dataset.csv", index_col=0).drop(columns=["blueWin"])
+    
+    # Apply feature selection to each row and create a numpy array
+    X_train = df_rep.apply(lambda row: apply_feature_selection(row), axis=1)
+    X_train = X_train.to_numpy()
+
+    # Scale the data
+    scaler = pickle.load(open("scaler.pkl", "rb"))
+    X_train = scaler.transform(X_train)
+    
+    # Extract feature names
+    feature_names = list(apply_feature_selection(df_rep.iloc[0]).index)
+    
+    # Create and return the explainer
+    explainer = lime.lime_tabular.LimeTabularExplainer(
+        training_data=X_train,
+        feature_names=feature_names,
+        class_names=["Red team", "Blue team"],
+        mode='classification'
+    )
+    return explainer
+
+# Create the global explainer once, at startup
+global_explainer = create_global_explainer()
 
 
 def predict(features):
@@ -31,7 +62,7 @@ def predict(features):
         to_predict: data to predict
         
     Returns:
-        prediction: prediction result 
+        prediction: prediction result (probability of blue team winning, float [0, 1])
     """
     # to_predict["diffMinionsKilled"] = to_predict["blueTeamMinionsKilled"] - to_predict["redTeamMinionsKilled"]
     # to_predict["diffJungleMinions"] = to_predict["blueTeamJungleMinions"] - to_predict["redTeamJungleMinions"]
@@ -66,7 +97,8 @@ def predict_match(match_id):
         match_id: id of the match to predict
 
     Returns:
-        prediction: prediction result (1 if blue team wins, 0 if red team wins) or -1 if match not found
+        prediction: prediction result (probability of blue team winning, float [0, 1]) or -1 if match not found
+        exp: explanation of the prediction using LIME
     """
 
     # TODO: implement this function with the riot API
@@ -85,8 +117,12 @@ def predict_match(match_id):
         "match_id": match_id,
         "prediction": prediction
     })
+
+    # Get the explanation for the prediction
+    model = pickle.load(open("model.pkl", "rb"))
+    exp = global_explainer.explain_instance(match_features.values, model.predict_proba, num_features=5)
     
-    return prediction
+    return prediction, exp
 
 def get_history_string():
     history_string = ""
@@ -136,14 +172,33 @@ def get_history():
 @app.route('/predict', methods=['POST'])
 def get_prediction():
     match_id = request.form['matchId']
-    prediction = predict_match(match_id)
+    prediction, exp = predict_match(match_id)
     
     if prediction == -1:
         return jsonify({"error": "Match not found"})
     
+    explanation_list = exp.as_list()
+    explanation_html = """
+    <div style='text-align: center; margin-top: 10px;'>
+    <table style='font-family: monospace; text-align: left; display: inline-block;'>
+    """ + "\n".join([
+        f"<tr>"
+        f"<td>{feat}</td>"
+        f"<td style='padding: 0 2em;'>→</td>"
+        f"<td style='color:{'limegreen' if weight > 0 else 'tomato'};'>"
+        f"{'+' if weight > 0 else ''}{weight * 100:.2f}%"
+        f"</td>"
+        f"</tr>"
+        for feat, weight in explanation_list
+    ]) + """
+    </table>
+    </div>
+    """
+
     # Return the probability for blue team winning (a float between 0 and 1)
     return jsonify({
-         "probability": prediction
+         "probability": prediction,
+         "explanation": explanation_html
     })
 
 

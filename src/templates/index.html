@@ -106,7 +106,9 @@
     
         <div id="results">
             <h2>Prediction:</h2>
-            <p><span id="prediction"></span></p>
+            <p><span id="prediction"></span><br></p>
+            <h3 style="margin-top: 60px;">Explanation:</h3>
+            <p><span id="explanation"></span></p>
         </div>
     </div>
 
@@ -181,6 +183,9 @@
                         '<span style="color:' + probColor + ';">' + probabilityValue.toFixed(2) + '%</span>' +
                         '</span>';
                     $("#prediction").html(formattedResult);
+
+                    // Display the LIME explanation
+                    $("#explanation").html(response.explanation);
 
                     getPredictionHistory(); // Update the prediction history
                 }
