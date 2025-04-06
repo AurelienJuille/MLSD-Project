@@ -1,15 +1,47 @@
-import pickle
 import pandas as pd
 import lime
 import lime.lime_tabular
+import joblib
+import tempfile
 
 from flask import Flask, request, render_template, jsonify, redirect, url_for
+from google.cloud import aiplatform
+from google.cloud import storage
 
 app = Flask(__name__)
 
 history = []
 
+aiplatform.init(project="lolffate", location="europe-west1") # Initialize the AI Platform project and location
 
+models = aiplatform.Model.list(filter='display_name="lolffate"') # Get the list of models with the display name "lolffate"
+latest_model = sorted(models, key=lambda m: m.create_time, reverse=True)[0] # Get the latest model
+
+def load_artifact_from_gcs(gcs_uri: str, filename: str):
+    """
+    Downloads a file from GCS and loads it with joblib.
+
+    Args:
+        gcs_uri: The GCS URI to the folder containing the artifact
+        filename: The name of the file to download
+
+    Returns:
+        The loaded Python object
+    """
+    storage_client = storage.Client()
+    bucket_name, blob_prefix = gcs_uri.replace("gs://", "").split("/", 1)
+    blob_path = f"{blob_prefix}/{filename}"
+    
+    bucket = storage_client.bucket(bucket_name)
+    blob = bucket.blob(blob_path)
+
+    with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+        blob.download_to_filename(temp_file.name)
+        obj = joblib.load(temp_file.name)
+
+    return obj
+
+model = load_artifact_from_gcs(latest_model.uri, "model.joblib") # Load the model from GCS once at startup
 
 def apply_feature_selection(original_features):
     """
@@ -34,10 +66,6 @@ def create_global_explainer():
     X_train = df_rep.apply(lambda row: apply_feature_selection(row), axis=1)
     X_train = X_train.to_numpy()
 
-    # Scale the data
-    scaler = pickle.load(open("scaler.pkl", "rb"))
-    X_train = scaler.transform(X_train)
-    
     # Extract feature names
     feature_names = list(apply_feature_selection(df_rep.iloc[0]).index)
     
@@ -79,11 +107,6 @@ def predict(features):
     #to_predict = apply_feature_selection(features)
     to_predict = features.values.reshape(1, -1)
 
-    scaler = pickle.load(open("scaler.pkl", "rb"))
-    model = pickle.load(open("model.pkl", "rb"))
-
-    to_predict = scaler.transform(to_predict) # Scale the data
-
     prediction = model.predict_proba(to_predict)[0, 1] # Probability of blue team winning for the first sample
 
     return prediction
@@ -119,7 +142,6 @@ def predict_match(match_id):
     })
 
     # Get the explanation for the prediction
-    model = pickle.load(open("model.pkl", "rb"))
     exp = global_explainer.explain_instance(match_features.values, model.predict_proba, num_features=5)
     
     return prediction, exp
