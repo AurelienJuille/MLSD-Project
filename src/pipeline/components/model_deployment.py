@@ -79,7 +79,7 @@ def deploy_model(
             )
             
         model_upload.wait()
-        logging.info(f"Model uploaded to: {uploaded_model.resource_name}")
+        logging.info(f"Model uploaded to: {model_upload.resource_name}")
         return model_upload
     
     uploaded_model = upload_model()
