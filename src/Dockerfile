@@ -9,18 +9,20 @@ COPY requirements.txt /app/
 # Install the required packages
 RUN pip install -r requirements.txt
 
-COPY . /app
+COPY app.py /app/
+COPY templates /app/templates
+COPY static /app/static
 
-# Expose port 8080 for Flask
-#EXPOSE 8080
+# TO REMOVE after adding the riot api
+COPY data/processed_dataset.csv /app/data/processed_dataset.csv
+
+# ONLY FOR LOCAL TESTING
+COPY lolffate-key.json /app/lolffate-key.json
 
 # Flask environment variables
 ENV FLASK_APP=app.py
 
 # Set the port for the Flask application
 ENV PORT 5001
-
-# Run the Flask application
-# CMD ["flask", "run", "--host=0.0.0.0", "--port=8080"]
 
 CMD exec gunicorn --bind :$PORT --workers 1 --threads 8 app:app
