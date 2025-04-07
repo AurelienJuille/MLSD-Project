@@ -13,9 +13,6 @@ COPY app.py /app/
 COPY templates /app/templates
 COPY static /app/static
 
-# TO REMOVE after adding the riot api
-COPY data/processed_dataset.csv /app/data/processed_dataset.csv
-
 # ONLY FOR LOCAL TESTING
 COPY lolffate-key.json /app/lolffate-key.json
 
