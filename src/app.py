@@ -232,7 +232,7 @@ def extract_game_data(data):
     return features
 
 
-def predict_match(match_id=None):
+def predict_match():
 	"""
 	Predict the result of the current in-game match using the local Riot API
 	
@@ -259,14 +259,12 @@ def predict_match(match_id=None):
 
 		prediction = predict(match_features)
 
-		history.append({
-			"match_id": match_id or "current_game",
-			"prediction": prediction
-		})
-
 		exp = global_explainer.explain_instance(match_features.values, model.predict_proba, num_features=5)
 
-		return prediction, exp
+		local_player = next((p for p in data["allPlayers"] if p["summonerName"] == data["activePlayer"]["summonerName"]), None)
+		player_team = "blue" if local_player and local_player["team"] == "ORDER" else "red"
+
+		return prediction, exp, player_team
 
 	except Exception as e:
 		return -1, f"Error processing match data: {str(e)}"
@@ -319,8 +317,7 @@ def get_history():
 
 @app.route('/predict', methods=['POST'])
 def get_prediction():
-	match_id = request.form['matchId']
-	prediction, exp = predict_match(match_id)
+	prediction, exp, player_team = predict_match()
 	print("prediction:", prediction)
 
 	if prediction == -1:
@@ -348,7 +345,8 @@ def get_prediction():
 	# Return the probability for blue team winning (a float between 0 and 1)
 	return jsonify({
 		"probability": prediction,
-		"explanation": explanation_html
+		"explanation": explanation_html,
+		"player_team": player_team
 	})
 
 

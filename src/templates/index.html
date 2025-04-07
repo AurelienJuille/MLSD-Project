@@ -101,7 +101,6 @@
             <img class="logo" src="{{ url_for('static', filename='lolffate_logo.png') }}" alt="LolFFate">
         </h1>
     
-        <input type="text" id="matchId" placeholder="Match ID">
         <button onclick="runPrediction()">Predict</button>
     
         <div id="results">
@@ -135,62 +134,44 @@
 
     <script>
         function runPrediction() {
-            var matchId = $("#matchId").val();
-            if (!matchId) {
-                alert("Please enter a match ID");
-                return;
-            }
-            $.post("/predict", { matchId: matchId }, function (response) {
-                if (response.error) {
-                    alert("Error: " + response.error);
-                } else {
-                    // Retrieve the raw probability for blue team winning
-                    var prob = parseFloat(response.probability);
+			$.post("/predict", function (response) {
+				if (response.error) {
+					alert("Error: " + response.error);
+				} else {
+					var prob = parseFloat(response.probability);
+					var playerTeam = response.player_team;
+					var effectiveProbability = playerTeam === "blue" ? prob : (1 - prob);
+					var probabilityValue = effectiveProbability * 100;
 
-                    // Determine the favored team and compute effective probability
-                    var team, effectiveProbability;
-                    if (prob >= 0.5) {
-                        team = "Blue team";
-                        effectiveProbability = prob;
-                    } else {
-                        team = "Red team";
-                        effectiveProbability = 1 - prob;
-                    }
-                    // Convert effective probability to a percentage
-                    var probabilityValue = effectiveProbability * 100;
+					// Gradient color: yellow (50%) → green (100%)
+					var t = Math.min(Math.max((effectiveProbability - 0.5) / 0.5, 0), 1);
+					var r = Math.round(255 * (1 - t));
+					var g = 255;
+					var b = 0;
+					function componentToHex(c) {
+						var hex = c.toString(16);
+						return hex.length === 1 ? "0" + hex : hex;
+					}
+					var probColor = "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
 
-                    // Compute a gradient color:
-                    // At 50% (effectiveProbability = 0.5) => yellow (#FFFF00)
-                    // At 100% (effectiveProbability = 1) => green (#00FF00)
-                    var t = Math.min(Math.max((effectiveProbability - 0.5) / 0.5, 0), 1);
-                    var r = Math.round(255 * (1 - t)); // from 255 (yellow) to 0 (green)
-                    var g = 255;
-                    var b = 0;
-                    function componentToHex(c) {
-                        var hex = c.toString(16);
-                        return hex.length === 1 ? "0" + hex : hex;
-                    }
-                    var probColor = "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+					// Team color
+					const blueTeamColor = "#53bae6";
+					const redTeamColor = "#e84141";
+					var teamColor = playerTeam === "blue" ? blueTeamColor : redTeamColor;
 
-                    // Set team name color (blue for Blue team, red for Red team)
-                    const blueTeamColor = "#53bae6";
-                    const redTeamColor = "#e84141";
-                    var teamColor = team.toLowerCase().indexOf("blue") !== -1 ? blueTeamColor : redTeamColor;
+					// Final result
+					var formattedResult = '<span style="font-size:1.5em;">' +
+						'You (<span style="color:' + teamColor + ';">' + (playerTeam === "blue" ? "Blue team" : "Red team") + '</span>) have a ' +
+						'<span style="color:' + probColor + ';">' + probabilityValue.toFixed(2) + '%</span> chance of winning' +
+						'</span>';
 
-                    // Build formatted result with larger font (1.5em)
-                    var formattedResult = '<span style="font-size:1.5em;">' +
-                        '<span style="color:' + teamColor + ';">' + team + '</span> wins with probability of ' +
-                        '<span style="color:' + probColor + ';">' + probabilityValue.toFixed(2) + '%</span>' +
-                        '</span>';
-                    $("#prediction").html(formattedResult);
+					$("#prediction").html(formattedResult);
+					$("#explanation").html(response.explanation);
+					getPredictionHistory();
+				}
+			});
+		}
 
-                    // Display the LIME explanation
-                    $("#explanation").html(response.explanation);
-
-                    getPredictionHistory(); // Update the prediction history
-                }
-            });
-        }
 
         function getPredictionHistory() {
             $.get("/past_predictions", function (response) {
