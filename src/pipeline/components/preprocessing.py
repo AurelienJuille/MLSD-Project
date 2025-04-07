@@ -21,9 +21,19 @@ def preprocessing(
         preprocessed_dataset: Output artifact for the preprocessed dataset
     """
     import pandas as pd
-    from sklearn.preprocessing import StandardScaler, OneHotEncoder
     import logging
+    from google.cloud import storage
     
+    def upload_blob(bucket_name, source_file_path, destination_blob_name):
+        """Uploads a file to the specified bucket."""
+        storage_client = storage.Client()
+        bucket = storage_client.bucket(bucket_name)
+        blob = bucket.blob(destination_blob_name)
+
+        blob.upload_from_filename(source_file_path)
+
+        print(f"File {source_file_path} uploaded to {destination_blob_name}.")
+        
     # Load the dataset
     df = pd.read_csv(dataset.path)
 
@@ -49,3 +59,7 @@ def preprocessing(
     # Save preprocessed dataset
     df.to_csv(preprocessed_dataset.path, index=False)
     logging.info(f"Preprocessed dataset saved to: {preprocessed_dataset.path}.")
+
+    # Upload preprocessed dataset to GCS bucket
+    upload_blob('lolffate-data', preprocessed_dataset.path, 'data/processed_dataset.csv')
+    
