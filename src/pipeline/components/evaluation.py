@@ -28,8 +28,8 @@ def evaluation(
     """
     import pandas as pd
     import joblib
-    from sklearn.metrics import mean_squared_error, r2_score
     import logging
+    from sklearn.metrics import mean_squared_error, r2_score, log_loss, accuracy_score
 
     # Load the model and dataset
     model = joblib.load(model.path + "/model.joblib")
@@ -41,16 +41,29 @@ def evaluation(
     
     # Make predictions
     y_pred = model.predict(X)
-
+        
     # Calculate metrics
     mse = mean_squared_error(y, y_pred)
     r2 = r2_score(y, y_pred)
     
-    accuracy = model.score(X, y)
-    
     # Save the metrics
     metrics.log_metric("mean_squared_error", mse)
     metrics.log_metric("r2_score", r2)
+
+    # Calculate accuracy
+    accuracy = accuracy_score(y, y_pred)
+    
+    # Save the accuracy metric
     metrics.log_metric("accuracy", accuracy)
     
-    logging.info(f"Evaluation metrics: MSE={mse}, R2={r2}, Accuracy={accuracy}")
+    # Make predictions for log loss
+    y_pred_prob = model.predict_proba(X)[:, 1]
+    
+    # Calculate log loss
+    loss = log_loss(y, y_pred_prob)
+    
+    # Save the log loss metric
+    metrics.log_metric("log_loss", loss)
+    
+    logging.info(f"Evaluation metrics: MSE={mse}, R2={r2}, Accuracy={accuracy}, Log Loss={loss}")
+    
