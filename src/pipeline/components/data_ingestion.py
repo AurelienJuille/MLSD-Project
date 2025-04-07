@@ -47,7 +47,7 @@ def data_ingestion(
         
         # Save the dataset
         logging.info(f"Saving dataset to {dataset.path}...")
-        df.to_csv(dataset.path, index=False)
+        df.to_csv(dataset.path, index=True)
         logging.info(f"Dataset saved to: {dataset.path}.")
         
     except Exception as e:

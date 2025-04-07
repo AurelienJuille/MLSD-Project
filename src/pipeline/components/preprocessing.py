@@ -35,7 +35,7 @@ def preprocessing(
         print(f"File {source_file_path} uploaded to {destination_blob_name}.")
         
     # Load the dataset
-    df = pd.read_csv(dataset.path)
+    df = pd.read_csv(dataset.path, index_col=0)
 
     # Drop unnecessary columns
     df = df.drop(columns=["end"])
@@ -57,7 +57,7 @@ def preprocessing(
     df['diffTurretPlatesDestroyed'] = (df['blueTeamTurretPlatesDestroyed'] - df['redTeamTurretPlatesDestroyed'])
 
     # Save preprocessed dataset
-    df.to_csv(preprocessed_dataset.path, index=False)
+    df.to_csv(preprocessed_dataset.path, index=True)
     logging.info(f"Preprocessed dataset saved to: {preprocessed_dataset.path}.")
 
     # Upload preprocessed dataset to GCS bucket

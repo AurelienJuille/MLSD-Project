@@ -34,7 +34,7 @@ def training(
     from sklearn.ensemble import RandomForestClassifier
     from sklearn.model_selection import RandomizedSearchCV, KFold
 
-    df = pd.read_csv(preprocessed_dataset_train.path)
+    df = pd.read_csv(preprocessed_dataset_train.path, index_col=0)
     
     # Split features and target
     X_train = df.drop(columns=["blueWin"]) # Features

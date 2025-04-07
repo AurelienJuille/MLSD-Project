@@ -35,7 +35,7 @@ def evaluation(
     model = joblib.load(model.path + "/model.joblib")
     
     # Load the test dataset
-    df = pd.read_csv(preprocessed_dataset_test.path)
+    df = pd.read_csv(preprocessed_dataset_test.path, index_col=0)
     X = df.drop(columns=["blueWin"])
     y = df["blueWin"]
     
