@@ -44,31 +44,16 @@ def load_artifact_from_gcs(gcs_uri: str, filename: str):
 
 model = load_artifact_from_gcs(latest_model.uri, "model.joblib") # Load the model from GCS once at startup
 
-def apply_feature_selection(original_features):
-	"""
-	Prepare data for prediction
-	
-	Args:
-	    df: data to predict 
-	    
-	Returns:
-	    to_predict: data to predict after feature selection
-	"""
-	#selected_features_indices = [2, 11, 12, 16, 21, 24, 25, 27, 29, 30, 31, 32, 33, 35, 37] 
-	#return original_features.iloc[selected_features_indices]
-	return original_features
-
-
 def create_global_explainer():
 	# Load the dataset
 	df_rep = pd.read_csv("data/processed_dataset.csv", index_col=0).drop(columns=["blueWin"])
 
 	# Apply feature selection to each row and create a numpy array
-	X_train = df_rep.apply(lambda row: apply_feature_selection(row), axis=1)
+	X_train = df_rep.apply(lambda row: row, axis=1)
 	X_train = X_train.to_numpy()
 
 	# Extract feature names
-	feature_names = list(apply_feature_selection(df_rep.iloc[0]).index)
+	feature_names = list(df_rep.iloc[0].index)
 
 	# Create and return the explainer
 	explainer = lime.lime_tabular.LimeTabularExplainer(
@@ -105,7 +90,6 @@ def predict(features):
 	# to_predict["diffInhibitorsDestroyed"] = to_predict["blueTeamInhibitorsDestroyed"] - to_predict["redTeamInhibitorsDestroyed"]
 	# to_predict["diffTurretPlatesDestroyed"] = to_predict["blueTeamTurretPlatesDestroyed"] - to_predict["redTeamTurretPlatesDestroyed"]
 
-	#to_predict = apply_feature_selection(features)
 	to_predict = features.values.reshape(1, -1)
 
 	prediction = model.predict_proba(to_predict)[0, 1] # Probability of blue team winning for the first sample
@@ -255,7 +239,7 @@ def predict_match():
 		features = extract_game_data(data)
 
 		df = pd.DataFrame([features])
-		match_features = apply_feature_selection(df.iloc[0])
+		match_features = df.iloc[0]
 
 		prediction = predict(match_features)
 
