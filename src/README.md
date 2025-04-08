@@ -27,3 +27,7 @@ This part has been done manually, the deployed can be found here https://flask-a
 In this sprint, you have implemented a model pipeline to automatically run different steps of your model training and deployment.
 
 The resulting pipeline construction and components are available in the [pipeline folder](pipeline), with a `Dockerfile` as well.
+
+
+## Why 2 versions of our model serving API ?
+This is because the Riot API that we use only works locally at the moment, therefore 2 versions were created in order to also have a version which works online, to fill the requirements, and one more practical which works locally.
