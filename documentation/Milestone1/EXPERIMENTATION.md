@@ -38,9 +38,7 @@ We computed different metrics for evaluation of the model. Precisely:
 
 - Accuracy
 - F1 score
-- Area under the ROC curve
-- ROC curve plot
-
+- Area under the ROC curvedocumentation/EXPERIMENTATION.md
 ## Results
 
 With this setup, we achieved consistently an **accuracy of 75%** on the test set.
