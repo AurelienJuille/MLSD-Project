@@ -1,0 +1,20 @@
+repos:
+  # Pre-commit hook for pylint
+  # - repo: https://github.com/pre-commit/mirrors-pylint
+  #   rev: ''
+  #   hooks:
+  #     - id: pylint
+  #       args: [--disable=E0401,--disable=E1120,--errors-only]
+
+  # Pre-commit hook for checking Python code formatting with black
+  - repo: https://github.com/psf/black
+    rev: 23.3.0  # Use the latest version of black
+    hooks:
+      - id: black
+
+  # Pre-commit hook for checking trailing whitespace and end-of-file fixes
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer

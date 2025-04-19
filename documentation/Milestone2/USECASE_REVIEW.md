@@ -10,4 +10,3 @@ As a result, we have **edited our Use Case canevas below**. All the **new** piec
 ## Completed template canevas
 
 ![Completed ML canevas for Milestone 2](ML_canvas-2.png)
-

@@ -37,9 +37,9 @@ More detailed results are avaliable. This is a summary:
 | Keeping only 3 most important features and related ones <sup>1</sup>   | 0.4965 | 3x3=9 |
 
 
-<sup>1</sup> In this example, the chosen features are: 
+<sup>1</sup> In this example, the chosen features are:
        'diffTotalGold', 'diffXp', 'diffTotalKills',
-       'blueTeamTotalGold', 'redTeamTotalGold', 
+       'blueTeamTotalGold', 'redTeamTotalGold',
        'redTeamXp', 'blueTeamXp',
        'blueTeamTotalKills','redTeamTotalKills',
 
