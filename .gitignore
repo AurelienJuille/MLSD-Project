@@ -1,4 +1,5 @@
 *.yaml
 *.pyc
+__pycache__/
 src/pipeline/lolffate_pipeline.json
 src/lolffate-key.json
