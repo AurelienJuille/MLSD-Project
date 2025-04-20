@@ -75,7 +75,6 @@ jobs:
           run: gcloud auth configure-docker
 
         - name: Build Docker image
-          run: docker build -t gcr.io/lolffate/flask-app:$GITHUB_SHA .
           run: docker build -f src/online_app/Dockerfile -t gcr.io/lolffate/flask-app:$GITHUB_SHA src/online_app
 
 
