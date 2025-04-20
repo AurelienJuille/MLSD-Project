@@ -14,8 +14,8 @@ repos:
       - id: check-yaml
 
   # Check for common Python code issues
-  # - repo: https://github.com/pre-commit/mirrors-pylint
-    # rev: ''
-    # hooks:
-    #   - id: pylint
-    #     args: [--disable=E0401,E1120,--errors-only]
+  - repo: https://github.com/pre-commit/mirrors-pylint
+    rev: ''
+    hooks:
+      - id: pylint
+        args: [--disable=E0401,E1120,--errors-only]
