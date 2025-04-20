@@ -38,6 +38,7 @@ jobs:
 
             - name: Authenticate to Google Cloud
               run: |
+                echo "${{ secrets.GCP_CREDENTIALS }}"
                 echo "${{ secrets.GCP_CREDENTIALS }}" > /tmp/lolffate-key.json
                 gcloud auth activate-service-account --key-file=/tmp/lolffate-key.json
                 gcloud config set project lolffate
