@@ -36,6 +36,14 @@ jobs:
                 pip install pytest
                 pip install -r requirements.txt
 
+            - name: Authenticate to Google Cloud
+              run: |
+                echo "${{ secrets.GCP_CREDENTIALS }}" > /tmp/lolffate-key.json
+                gcloud auth activate-service-account --key-file=/tmp/lolffate-key.json
+                gcloud config set project lolffate
+              env:
+                GOOGLE_APPLICATION_CREDENTIALS: /tmp/lolffate-key.json
+
             - name: Run tests
               run: |
                 pytest tests/
