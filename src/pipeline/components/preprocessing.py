@@ -1,9 +1,7 @@
-from kfp.dsl import (
-    Dataset,  # For handling datasets
-    Input,  # For component inputs
-    Output,  # For component outputs
-    component,  # For creating pipeline components
-)
+from kfp.dsl import Dataset  # For handling datasets
+from kfp.dsl import Input  # For component inputs
+from kfp.dsl import Output  # For component outputs
+from kfp.dsl import component  # For creating pipeline components
 
 
 @component(
@@ -21,8 +19,9 @@ def preprocessing(
         input_dataset: Input dataset from the data ingestion step
         preprocessed_dataset: Output artifact for the preprocessed dataset
     """
-    import pandas as pd
     import logging
+
+    import pandas as pd
     from google.cloud import storage
 
     def upload_blob(bucket_name, source_file_path, destination_blob_name):

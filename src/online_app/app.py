@@ -1,12 +1,11 @@
-import pandas as pd
-import lime
-import lime.lime_tabular
-import joblib
 import tempfile
 
-from flask import Flask, request, render_template, jsonify, redirect, url_for
-from google.cloud import aiplatform
-from google.cloud import storage
+import joblib
+import lime
+import lime.lime_tabular
+import pandas as pd
+from flask import Flask, jsonify, redirect, render_template, request, url_for
+from google.cloud import aiplatform, storage
 
 app = Flask(__name__)
 

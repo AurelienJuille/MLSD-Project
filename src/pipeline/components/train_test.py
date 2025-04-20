@@ -1,9 +1,7 @@
-from kfp.dsl import (
-    Dataset,  # For handling datasets
-    Input,  # For component inputs
-    Output,  # For component outputs
-    component,  # For creating pipeline components
-)
+from kfp.dsl import Dataset  # For handling datasets
+from kfp.dsl import Input  # For component inputs
+from kfp.dsl import Output  # For component outputs
+from kfp.dsl import component  # For creating pipeline components
 
 
 @component(

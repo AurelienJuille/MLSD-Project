@@ -1,11 +1,9 @@
-from kfp.dsl import (
-    Dataset,  # For handling datasets
-    Input,  # For component inputs
-    Model,  # For handling ML models
-    Output,  # For component outputs
-    Metrics,  # For tracking metrics
-    component,  # For creating pipeline components
-)
+from kfp.dsl import Dataset  # For handling datasets
+from kfp.dsl import Input  # For component inputs
+from kfp.dsl import Metrics  # For tracking metrics
+from kfp.dsl import Model  # For handling ML models
+from kfp.dsl import Output  # For component outputs
+from kfp.dsl import component  # For creating pipeline components
 
 
 @component(
@@ -26,14 +24,15 @@ def training(
         metrics: Output artifact for training metrics
         hyperparameters: Dictionary of hyperparameters
     """
-    import os
-    import pandas as pd
-    import joblib
     import logging
+    import os
+
+    import joblib
+    import pandas as pd
     from sklearn import preprocessing
-    from sklearn.pipeline import Pipeline
     from sklearn.ensemble import RandomForestClassifier
-    from sklearn.model_selection import RandomizedSearchCV, KFold
+    from sklearn.model_selection import KFold, RandomizedSearchCV
+    from sklearn.pipeline import Pipeline
 
     df = pd.read_csv(preprocessed_dataset_train.path, index_col=0)
 
