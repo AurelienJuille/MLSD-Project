@@ -18,4 +18,4 @@ repos:
     rev: ''
     hooks:
       - id: pylint
-        args: [--disable=E0401,E1120,--errors-only]
+        args: [--disable=import-error src/,--errors-only]
