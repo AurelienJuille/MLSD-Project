@@ -1,0 +1,29 @@
+# pre_commit.yml
+
+repos:
+  # Automatically format code with Black
+  - repo: https://github.com/psf/black
+    rev: 23.3.0
+    hooks:
+      - id: black
+
+  # Sort imports automatically
+  - repo: https://github.com/pre-commit/mirrors-isort
+    rev: v5.10.0
+    hooks:
+      - id: isort
+
+  # Detect trailing whitespace, bad line endings, etc.
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+
+  # Check for common Python code issues
+  # - repo: https://github.com/pre-commit/mirrors-pylint
+  #   rev: ''
+  #   hooks:
+  #     - id: pylint
+  #       args: [--disable=E0401,E1120,--errors-only]
