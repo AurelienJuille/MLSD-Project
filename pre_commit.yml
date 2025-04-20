@@ -18,4 +18,4 @@ repos:
     rev: ''
     hooks:
       - id: pylint
-        args: [--disable=import-error src/,--errors-only]
+        args: [--disable=src/pipeline,--errors-only]
