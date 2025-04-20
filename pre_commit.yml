@@ -18,4 +18,8 @@ repos:
     rev: ''
     hooks:
       - id: pylint
-        args: [--errors-only]
+        args: [
+          "--disable=all",
+          "--enable=unused-import,line-too-long,bad-indentation,trailing-whitespace",
+          "-rn"
+        ]

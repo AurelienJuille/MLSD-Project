@@ -1,3 +1,31 @@
+"""
+This module implements a Flask web application for predicting the outcome of
+League of Legends matches in real-time using a machine learning model.
+
+It integrates with the Riot Games API to fetch live game data, processes the
+data into features suitable for the model, and provides predictions along with
+explanations using LIME (Local Interpretable Model-agnostic Explanations).
+
+Key functionalities:
+- Fetch live game data from the Riot API.
+- Extract and preprocess features for prediction.
+- Use a pre-trained machine learning model to predict the probability of the
+    blue team winning.
+- Provide explanations for predictions using LIME.
+- Maintain a history of predictions and allow updates to past predictions.
+
+Routes:
+- `/predict`: Predict the outcome of the current match.
+- `/past_predictions`: Retrieve or update the history of predictions.
+- `/`: Render the main application interface.
+
+Dependencies:
+- Flask for the web application.
+- Google Cloud AI Platform for model storage and retrieval.
+- LIME for generating explanations.
+- Riot Games API for live game data.
+"""
+
 import tempfile
 
 import joblib
@@ -5,7 +33,7 @@ import lime
 import lime.lime_tabular
 import pandas as pd
 import requests
-from flask import Flask, jsonify, redirect, render_template, request, url_for
+from flask import Flask, jsonify, render_template, request
 from google.cloud import aiplatform, storage
 
 app = Flask(__name__)
@@ -55,6 +83,10 @@ model = load_artifact_from_gcs(
 
 
 def create_global_explainer():
+    """
+    Create a global LIME explainer for the model.
+    This function loads the dataset and initializes the explainer.
+    """
     # Load the dataset
     df_rep = pd.read_csv("data/processed_dataset.csv", index_col=0).drop(
         columns=["blueWin"]
@@ -91,17 +123,43 @@ def predict(features):
     Returns:
         prediction: prediction result (probability of blue team winning, float [0, 1])
     """
-    # to_predict["diffMinionsKilled"] = to_predict["blueTeamMinionsKilled"] - to_predict["redTeamMinionsKilled"]
-    # to_predict["diffJungleMinions"] = to_predict["blueTeamJungleMinions"] - to_predict["redTeamJungleMinions"]
-    # to_predict["diffTotalGold"] = to_predict["blueTeamTotalGold"] - to_predict["redTeamTotalGold"]
-    # to_predict["diffTotalKills"] = to_predict["blueTeamTotalKills"] - to_predict["redTeamTotalKills"]
-    # to_predict["diffXp"] = to_predict["blueTeamXp"] - to_predict["redTeamXp"]
-    # to_predict["diffTotalDamageToChamps"] = to_predict["blueTeamTotalDamageToChamps"] - to_predict["redTeamTotalDamageToChamps"]
-    # to_predict["diffDragonKills"] = to_predict["blueTeamDragonKills"] - to_predict["redTeamDragonKills"]
-    # to_predict["diffHeraldKills"] = to_predict["blueTeamHeraldKills"] - to_predict["redTeamHeraldKills"]
-    # to_predict["diffTowersDestroyed"] = to_predict["blueTeamTowersDestroyed"] - to_predict["redTeamTowersDestroyed"]
-    # to_predict["diffInhibitorsDestroyed"] = to_predict["blueTeamInhibitorsDestroyed"] - to_predict["redTeamInhibitorsDestroyed"]
-    # to_predict["diffTurretPlatesDestroyed"] = to_predict["blueTeamTurretPlatesDestroyed"] - to_predict["redTeamTurretPlatesDestroyed"]
+    # to_predict["diffMinionsKilled"] = (
+    #     to_predict["blueTeamMinionsKilled"] - to_predict["redTeamMinionsKilled"]
+    # )
+    # to_predict["diffJungleMinions"] = (
+    #     to_predict["blueTeamJungleMinions"] - to_predict["redTeamJungleMinions"]
+    # )
+    # to_predict["diffTotalGold"] = (
+    #     to_predict["blueTeamTotalGold"] - to_predict["redTeamTotalGold"]
+    # )
+    # to_predict["diffTotalKills"] = (
+    #     to_predict["blueTeamTotalKills"] - to_predict["redTeamTotalKills"]
+    # )
+    # to_predict["diffXp"] = (
+    #     to_predict["blueTeamXp"] - to_predict["redTeamXp"]
+    # )
+    # to_predict["diffTotalDamageToChamps"] = (
+    #     to_predict["blueTeamTotalDamageToChamps"]
+    #     - to_predict["redTeamTotalDamageToChamps"]
+    # )
+    # to_predict["diffDragonKills"] = (
+    #     to_predict["blueTeamDragonKills"] - to_predict["redTeamDragonKills"]
+    # )
+    # to_predict["diffHeraldKills"] = (
+    #     to_predict["blueTeamHeraldKills"] - to_predict["redTeamHeraldKills"]
+    # )
+    # to_predict["diffTowersDestroyed"] = (
+    #     to_predict["blueTeamTowersDestroyed"]
+    #     - to_predict["redTeamTowersDestroyed"]
+    # )
+    # to_predict["diffInhibitorsDestroyed"] = (
+    #     to_predict["blueTeamInhibitorsDestroyed"]
+    #     - to_predict["redTeamInhibitorsDestroyed"]
+    # )
+    # to_predict["diffTurretPlatesDestroyed"] = (
+    #     to_predict["blueTeamTurretPlatesDestroyed"]
+    #     - to_predict["redTeamTurretPlatesDestroyed"]
+    # )
 
     to_predict = features.values.reshape(1, -1)
 
@@ -295,6 +353,16 @@ def predict_match():
 
 
 def get_history_string():
+    """
+    Generates a formatted HTML string summarizing the match history and predictions.
+    The function iterates through a list of match history records, where each record
+    contains a match ID and a prediction value. Based on the prediction value, it
+    determines the winning team (Blue or Red) and appends a formatted string to the
+    result. The prediction is expressed as a percentage.
+    Returns:
+        str: An HTML-formatted string containing the match results and probabilities.
+    """
+
     history_string = ""
     for h in history:
         if h["prediction"] >= 0.5:
@@ -314,6 +382,13 @@ def get_history_string():
 
 @app.route("/past_predictions/last", methods=["PUT"])
 def update_last_history():
+    """
+    Updates the last prediction in the history with a new value provided in the request.
+    Returns:
+        Response: A JSON response containing the updated history or an error message
+                  if the history is empty.
+    """
+
     if len(history) == 0:
         return jsonify({"error": "No prediction history found"})
 
@@ -324,6 +399,14 @@ def update_last_history():
 
 @app.route("/past_predictions/<id>", methods=["PUT"])
 def update_history(id):
+    """
+    Updates the prediction value for a specific match in the history.
+    Args:
+        id (int): The match ID to update the prediction for.
+    Returns:
+        Response: A JSON response containing the updated history or an error message.
+    """
+
     if len(history) == 0:
         return jsonify({"error": "No prediction history found"})
 
@@ -338,6 +421,12 @@ def update_history(id):
 
 @app.route("/past_predictions", methods=["GET"])
 def get_history():
+    """
+    Retrieve and return the history as a JSON response.
+    Returns:
+        Response: A JSON object containing the history string or an error message.
+    """
+
     try:
         return jsonify({"history": get_history_string()})
 
@@ -347,6 +436,9 @@ def get_history():
 
 @app.route("/predict", methods=["POST"])
 def get_prediction():
+    """
+    Handle POST requests to predict the outcome of the current match.
+    """
     prediction, exp, player_team = predict_match()
     print("prediction:", prediction)
 
@@ -389,6 +481,10 @@ def get_prediction():
 
 @app.route("/")
 def index():
+    """
+    Render the index.html template for the home page.
+    """
+
     return render_template("index.html")
 
 

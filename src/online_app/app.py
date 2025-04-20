@@ -1,10 +1,30 @@
+"""
+This module defines a Flask web application for predicting the outcome of matches
+using a machine learning model hosted on Google Cloud AI Platform. It provides
+endpoints for making predictions, retrieving explanations for predictions using
+LIME, and managing prediction history.
+
+Key functionalities:
+- Load a machine learning model and dataset from Google Cloud Storage.
+- Predict match outcomes and provide explanations for predictions.
+- Maintain and update a history of past predictions.
+- Serve a web interface for interacting with the application.
+
+Dependencies:
+- Flask for web application framework.
+- Google Cloud libraries for accessing AI Platform and Storage.
+- LIME for generating explanations for predictions.
+- Pandas for data manipulation.
+- Joblib for loading serialized Python objects.
+"""
+
 import tempfile
 
 import joblib
 import lime
 import lime.lime_tabular
 import pandas as pd
-from flask import Flask, jsonify, redirect, render_template, request, url_for
+from flask import Flask, jsonify, render_template, request
 from google.cloud import aiplatform, storage
 
 app = Flask(__name__)
@@ -107,7 +127,9 @@ def predict_match(match_id):
         match_id: id of the match to predict
 
     Returns:
-        prediction: prediction result (probability of blue team winning, float [0, 1]) or -1 if match not found
+        prediction: prediction result
+        (probability of blue team winning, float [0, 1])
+        or -1 if match not found
         exp: explanation of the prediction using LIME
     """
     df = pd.read_csv(gcs_path, index_col=0)

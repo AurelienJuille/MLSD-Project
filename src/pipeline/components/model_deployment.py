@@ -62,16 +62,22 @@ def deploy_model(
             model_version = listed_model[0]  # most recently created
             model_upload = vertex_ai.Model.upload(
                 display_name="lolffate",
-                parent_model=model_version.resource_name,  # add link to the previously model version
+                parent_model=model_version.resource_name,  # link to previous version
                 artifact_uri=model.path,
-                serving_container_image_uri="europe-docker.pkg.dev/vertex-ai/prediction/sklearn-cpu.1-5:latest",
+                serving_container_image_uri=(
+                    "europe-docker.pkg.dev/vertex-ai/prediction/"
+                    "sklearn-cpu.1-5:latest"
+                ),
                 location="europe-west1",
             )
         else:
             model_upload = vertex_ai.Model.upload(
                 display_name="lolffate",
                 artifact_uri=model.path,
-                serving_container_image_uri="europe-docker.pkg.dev/vertex-ai/prediction/sklearn-cpu.1-5:latest",
+                serving_container_image_uri=(
+                    "europe-docker.pkg.dev/vertex-ai/prediction/"
+                    "sklearn-cpu.1-5:latest"
+                ),
                 location="europe-west1",
             )
 

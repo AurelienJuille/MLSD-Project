@@ -1,4 +1,4 @@
-from kfp.dsl import HTML  # For visualization
+# from kfp.dsl import HTML  # For visualization
 from kfp.dsl import Dataset  # For handling datasets
 from kfp.dsl import Input  # For component inputs
 from kfp.dsl import Metrics  # For tracking metrics
