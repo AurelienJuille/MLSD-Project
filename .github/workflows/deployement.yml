@@ -4,6 +4,9 @@ on:
   pull_request:
     branches: [ main, develop ]
 
+env:
+  REGION: europe-west1
+
 jobs:
     pre-commit:
         runs-on: ubuntu-latest
@@ -72,19 +75,21 @@ jobs:
           run: gcloud config set project lolffate
 
         - name: Configure Docker for GCR
-          run: gcloud auth configure-docker
+          run: gcloud auth configure-docker $REGION-docker.pkg.dev
 
         - name: Build Docker image
-          run: docker build -f src/online_app/Dockerfile -t gcr.io/lolffate/flask-app:$GITHUB_SHA src/online_app
+          run: docker build -f src/online_app/Dockerfile -t flask-app:$GITHUB_SHA src/online_app
 
+        - name: Tag the image for Artifact Registry
+          run: docker tag flask-app:$GITHUB_SHA $REGION-docker.pkg.dev/lolffate/cloud-run-source-deploy/flask-app:$GITHUB_SHA
 
         - name: Push Docker image
-          run: docker push gcr.io/lolffate/flask-app:$GITHUB_SHA
+          run: docker push $REGION-docker.pkg.dev/lolffate/cloud-run-source-deploy/flask-app:$GITHUB_SHA
 
         - name: Deploy to Cloud Run
           run: |
             gcloud run deploy flask-app \
-              --image gcr.io/lolffate/flask-app:$GITHUB_SHA \
-              --region europe-west1 \
+              --image $REGION-docker.pkg.dev/lolffate/cloud-run-source-deploy/flask-app:$GITHUB_SHA \
+              --region $REGION \
               --platform managed \
               --allow-unauthenticated
