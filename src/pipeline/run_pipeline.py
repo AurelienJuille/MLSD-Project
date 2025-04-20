@@ -1,14 +1,12 @@
-from kfp.dsl import pipeline  # For defining the pipeline
-
-from kfp import compiler
-from google.cloud import aiplatform
-
 from components.data_ingestion import data_ingestion
+from components.evaluation import evaluation
+from components.model_deployment import deploy_model
 from components.preprocessing import preprocessing
 from components.train_test import train_test_split
 from components.training import training
-from components.evaluation import evaluation
-from components.model_deployment import deploy_model
+from google.cloud import aiplatform
+from kfp import compiler
+from kfp.dsl import pipeline  # For defining the pipeline
 
 
 @pipeline(name="lolffate pipeline", pipeline_root=f"gs://lolffate-data/pipeline_root")

@@ -1,8 +1,6 @@
-from kfp.dsl import (
-    Dataset,  # For handling datasets
-    Output,  # For component outputs
-    component,  # For creating pipeline components
-)
+from kfp.dsl import Dataset  # For handling datasets
+from kfp.dsl import Output  # For component outputs
+from kfp.dsl import component  # For creating pipeline components
 
 
 @component(
@@ -16,8 +14,9 @@ def data_ingestion(dataset: Output[Dataset]):
     Args:
         dataset: Output artifact to store the prepared dataset
     """
-    import pandas as pd
     import logging
+
+    import pandas as pd
 
     try:
         logging.info("Starting data ingestion...")

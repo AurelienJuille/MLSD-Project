@@ -1,4 +1,5 @@
 *.pyc
 __pycache__/
 src/pipeline/lolffate_pipeline.json
-src/lolffate-key.json
+src/online_app/lolffate-key.json
+src/local_app/lolffate-key.json

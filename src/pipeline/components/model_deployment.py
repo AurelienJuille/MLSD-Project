@@ -1,9 +1,7 @@
-from kfp.dsl import (
-    Input,  # For component inputs
-    Model,  # For handling ML models
-    Output,  # For component outputs
-    component,  # For creating pipeline components
-)
+from kfp.dsl import Input  # For component inputs
+from kfp.dsl import Model  # For handling ML models
+from kfp.dsl import Output  # For component outputs
+from kfp.dsl import component  # For creating pipeline components
 
 
 @component(
@@ -22,9 +20,10 @@ def deploy_model(
         vertex_model: Output artifact for the deployed model
         vertex_endpoint: Output artifact for the Vertex AI endpoint
     """
-    from google.cloud import aiplatform as vertex_ai
-    from pathlib import Path
     import logging
+    from pathlib import Path
+
+    from google.cloud import aiplatform as vertex_ai
 
     # Checks existing Vertex AI Enpoint or creates Endpoint if it is not exist.
     def create_endpoint():

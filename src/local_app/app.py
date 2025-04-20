@@ -1,13 +1,12 @@
-import pandas as pd
+import tempfile
+
+import joblib
 import lime
 import lime.lime_tabular
-import joblib
-import tempfile
+import pandas as pd
 import requests
-
-from flask import Flask, request, render_template, jsonify, redirect, url_for
-from google.cloud import aiplatform
-from google.cloud import storage
+from flask import Flask, jsonify, redirect, render_template, request, url_for
+from google.cloud import aiplatform, storage
 
 app = Flask(__name__)
 
@@ -262,7 +261,7 @@ def predict_match():
 
         data = response.json()
 
-    except Exception as e:
+    except Exception:
         return -1, None
 
     try:

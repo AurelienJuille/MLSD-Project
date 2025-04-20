@@ -1,12 +1,10 @@
-from kfp.dsl import (
-    Dataset,  # For handling datasets
-    Input,  # For component inputs
-    Model,  # For handling ML models
-    Output,  # For component outputs
-    Metrics,  # For tracking metrics
-    HTML,  # For visualization
-    component,  # For creating pipeline components
-)
+from kfp.dsl import HTML  # For visualization
+from kfp.dsl import Dataset  # For handling datasets
+from kfp.dsl import Input  # For component inputs
+from kfp.dsl import Metrics  # For tracking metrics
+from kfp.dsl import Model  # For handling ML models
+from kfp.dsl import Output  # For component outputs
+from kfp.dsl import component  # For creating pipeline components
 
 
 @component(
@@ -27,10 +25,11 @@ def evaluation(
         metrics: Output artifact for evaluation metrics
         html: Output artifact for visualization HTML
     """
-    import pandas as pd
-    import joblib
     import logging
-    from sklearn.metrics import mean_squared_error, r2_score, log_loss, accuracy_score
+
+    import joblib
+    import pandas as pd
+    from sklearn.metrics import accuracy_score, log_loss, mean_squared_error, r2_score
 
     # Load the model and dataset
     model = joblib.load(model.path + "/model.joblib")
