@@ -31,4 +31,4 @@ For more information on the model training and experimentation part, look at the
 
 - [Slides of the 1st Milestone](documentation/Milestone1/Milestone_1_slides.pdf).
 - [Slides of the 2nd Milestone](documentation/Milestone2/Milestone_2_slides.pdf).
-- Slides for the 3rd Milestone TBD.
+- Slides for the 3rd Milestone TBD

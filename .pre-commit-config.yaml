@@ -1,0 +1,28 @@
+repos:
+  # Automatically format code with Black
+  - repo: https://github.com/psf/black
+    rev: 23.3.0
+    hooks:
+      - id: black
+
+  # Detect trailing whitespace, bad line endings, etc.
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+
+  # Check for common Python code issues
+  - repo: local
+    hooks:
+      - id: pylint
+        name: Run pylint
+        entry: pylint
+        language: system  # use the system-installed pylint (e.g., from venv)
+        types: [python]
+        args: [
+          "--disable=all",
+          "--enable=unused-import,line-too-long,bad-indentation,trailing-whitespace",
+          "-rn"
+          ]
