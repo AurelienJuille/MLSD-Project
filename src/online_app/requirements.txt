@@ -1,5 +1,5 @@
 numpy>=1.22.4,<2
-pandas
+pandas==2.1.0
 gcsfs
 scikit-learn==1.3.0
 google-cloud-aiplatform==1.42.1
