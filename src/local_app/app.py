@@ -81,6 +81,7 @@ model = load_artifact_from_gcs(
     latest_model.uri, "model.joblib"
 )  # Load the model from GCS once at startup
 
+gcs_path = "gs://lolffate-data/data/processed_dataset.csv"  # Path to the dataset in GCS
 
 def create_global_explainer():
     """
@@ -88,7 +89,7 @@ def create_global_explainer():
     This function loads the dataset and initializes the explainer.
     """
     # Load the dataset
-    df_rep = pd.read_csv("data/processed_dataset.csv", index_col=0).drop(
+    df_rep = pd.read_csv(gcs_path, index_col=0).drop(
         columns=["blueWin"]
     )
 
