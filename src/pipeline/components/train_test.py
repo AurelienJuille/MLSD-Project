@@ -1,9 +1,8 @@
-from kfp.dsl import (
-    Dataset,     # For handling datasets
-    Input,       # For component inputs
-    Output,      # For component outputs
-    component,   # For creating pipeline components
-)
+from kfp.dsl import Dataset  # For handling datasets
+from kfp.dsl import Input  # For component inputs
+from kfp.dsl import Output  # For component outputs
+from kfp.dsl import component  # For creating pipeline components
+
 
 @component(
     base_image=f"europe-west1-docker.pkg.dev/lolffate/lolffate-pipeline/training:latest",
@@ -12,11 +11,11 @@ from kfp.dsl import (
 def train_test_split(
     preprocessed_dataset: Input[Dataset],
     preprocessed_dataset_train: Output[Dataset],
-    preprocessed_dataset_test: Output[Dataset]
+    preprocessed_dataset_test: Output[Dataset],
 ):
     """
     Splits the preprocessed dataset into training and testing sets.
-    
+
     Args:
         preprocessed_dataset: Input preprocessed dataset
         preprocessed_dataset_train: Output artifact for the training dataset

@@ -49,7 +49,7 @@ availability.
 
 • Out-of-scope: Lategame analysis, coaching
 tools, real-time in-game
-assistance. 
+assistance.
   </td>
   </tr>
   <tr>
@@ -126,7 +126,7 @@ storage.
   <tr>
     <th>Inference</th>
     <td>
-    
+
 Online: Real-time (under 5
 sec) to respond to the initial
 problem.
