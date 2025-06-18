@@ -63,7 +63,7 @@ def load_artifact_from_gcs(gcs_uri: str, filename: str):
     Returns:
         The loaded Python object
     """
-    storage_client = storage.Client()
+    storage_client = storage.Client(project="lolffate")
     bucket_name, blob_prefix = gcs_uri.replace("gs://", "").split("/", 1)
     blob_path = f"{blob_prefix}/{filename}"
 
